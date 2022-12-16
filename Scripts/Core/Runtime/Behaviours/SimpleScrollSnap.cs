@@ -336,12 +336,13 @@ namespace DanielLochner.Assets.SimpleScrollSnap
             {
                 case MovementAxis.Horizontal:
                     releaseDirection = (Velocity.x > 0) ? Direction.Right : Direction.Left;
+                    releaseSpeed = Mathf.Abs(Velocity.x);
                     break;
                 case MovementAxis.Vertical:
                     releaseDirection = (Velocity.y > 0) ? Direction.Up : Direction.Down;
+                    releaseSpeed = Mathf.Abs(Velocity.y);
                     break;
             }
-            releaseSpeed = Velocity.magnitude;
         }
 
         private void Setup()
