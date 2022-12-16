@@ -12,7 +12,7 @@ namespace DanielLochner.Assets.SimpleScrollSnap
     {
         #region Fields
         private bool showMovementAndLayoutSettings = true, showNavigationSettings = true, showSnapSettings = true, showTransitionEffects = true, showEvents = false;
-        private SerializedProperty movementType, movementAxis, useAutomaticLayout, sizeControl, size, automaticLayoutSpacing, automaticLayoutMargins, useInfiniteScrolling, infiniteScrollingSpacing, useOcclusionCulling, startingPanel, useSwipeGestures, minimumSwipeSpeed, previousButton, nextButton, pagination, useToggleNavigation, snapTarget, snapSpeed, thresholdSpeedToSnap, useHardSnapping, useUnscaledTime, onTransitionEffects, onPanelSelecting, onPanelSelected, onPanelCentering, onPanelCentered;
+        private SerializedProperty movementType, movementAxis, useAutomaticLayout, sizeControl, size, automaticLayoutSpacing, automaticLayoutMargins, useInfiniteScrolling, infiniteScrollingSpacing, useOcclusionCulling, startingPanel, useSwipeGestures, minimumSwipeSpeed, swipeSpeedSmoothing, previousButton, nextButton, pagination, useToggleNavigation, snapTarget, snapSpeed, thresholdSpeedToSnap, useHardSnapping, useUnscaledTime, onTransitionEffects, onPanelSelecting, onPanelSelected, onPanelCentering, onPanelCentered;
         private SimpleScrollSnap scrollSnap;
         #endregion
 
@@ -38,6 +38,7 @@ namespace DanielLochner.Assets.SimpleScrollSnap
             // Navigation Settings
             useSwipeGestures = serializedObject.FindProperty("useSwipeGestures");
             minimumSwipeSpeed = serializedObject.FindProperty("minimumSwipeSpeed");
+            swipeSpeedSmoothing = serializedObject.FindProperty("swipeSpeedSmoothing");
             previousButton = serializedObject.FindProperty("previousButton");
             nextButton = serializedObject.FindProperty("nextButton");
             pagination = serializedObject.FindProperty("pagination");
@@ -159,6 +160,7 @@ namespace DanielLochner.Assets.SimpleScrollSnap
             {
                 EditorGUI.indentLevel++;
                 EditorGUILayout.PropertyField(minimumSwipeSpeed, new GUIContent("Minimum Swipe Speed", "The speed at which the user must be swiping in order for a transition to occur to another panel."));
+                EditorGUILayout.PropertyField(swipeSpeedSmoothing, new GUIContent("Swipe Speed Smoothing", "Smoothes the internal speed value across several frames to enable more reliable swipe transitions. Set to 0 to disable smoothing."));
                 EditorGUI.indentLevel--;
             }
         }

@@ -30,6 +30,8 @@ namespace DanielLochner.Assets.SimpleScrollSnap
         // Navigation Settings
         [SerializeField] private bool useSwipeGestures = true;
         [SerializeField] private float minimumSwipeSpeed = 0f;
+        [Range(0, 0.999f)]
+        [SerializeField] private float swipeSpeedSmoothing = 0.9f;
         [SerializeField] private Button previousButton = null;
         [SerializeField] private Button nextButton = null;
         [SerializeField] private ToggleGroup pagination = null;
@@ -121,6 +123,11 @@ namespace DanielLochner.Assets.SimpleScrollSnap
         {
             get => minimumSwipeSpeed;
             set => minimumSwipeSpeed = value;
+        }
+        public float SwipeSpeedSmoothing
+        {
+            get => swipeSpeedSmoothing;
+            set => swipeSpeedSmoothing = value;
         }
         public Button PreviousButton
         {
@@ -784,9 +791,19 @@ namespace DanielLochner.Assets.SimpleScrollSnap
         private void GetVelocity()
         {
             Vector2 displacement = Content.anchoredPosition - prevAnchoredPosition;
-            float time = useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
-            velocity = displacement / time;
             prevAnchoredPosition = Content.anchoredPosition;
+
+            float time = useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+
+            var frameVelocity = displacement / time;
+            if (isDragging && swipeSpeedSmoothing > 0)
+            {
+                velocity = velocity * swipeSpeedSmoothing + frameVelocity * (1 - swipeSpeedSmoothing);
+            }
+            else
+            {
+            velocity = displacement / time;
+            }
         }
         #endregion
     }
