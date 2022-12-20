@@ -56,6 +56,7 @@ namespace DanielLochner.Assets.SimpleScrollSnap
         private Direction releaseDirection;
         private float releaseSpeed;
         private bool isDragging, isPressing, isSelected = true;
+        private Transform _trashCan;
         #endregion
 
         #region Properties
@@ -667,16 +668,31 @@ namespace DanielLochner.Assets.SimpleScrollSnap
                 }
             }
         }
-
+        public void AddCopyToFront(GameObject panel)
+        {
+            _Add(panel, 0, createCopy: false);
+        }
+        public void AddCopyToBack(GameObject panel)
+        {
+            _Add(panel, NumberOfPanels, createCopy: false);
+        }
+        public void AddCopy(GameObject panel, int index)
+        {
+            _Add(panel, index, createCopy: true);
+        }
         public void AddToFront(GameObject panel)
         {
-            Add(panel, 0);
+            _Add(panel, 0, createCopy: false);
         }
         public void AddToBack(GameObject panel)
         {
-            Add(panel, NumberOfPanels);
+            _Add(panel, NumberOfPanels, createCopy: false);
         }
         public void Add(GameObject panel, int index)
+        {
+            _Add(panel, index, createCopy: false);
+        }
+        private void _Add(GameObject panel, int index, bool createCopy)
         {
             if (NumberOfPanels != 0 && (index < 0 || index > NumberOfPanels))
             {
@@ -689,7 +705,14 @@ namespace DanielLochner.Assets.SimpleScrollSnap
                 return;
             }
 
-            panel = Instantiate(panel, Content, false);
+            if (createCopy)
+            {
+                panel = Instantiate(panel, Content, false);
+            }
+            else
+            {
+                panel.transform.SetParent(Content.transform, worldPositionStays: false);
+            }
             panel.transform.SetSiblingIndex(index);
 
             if (ValidConfig)
@@ -705,41 +728,68 @@ namespace DanielLochner.Assets.SimpleScrollSnap
                 Setup();
             }
         }
-        public void RemoveFromFront()
+
+        public void RemoveAndDestroyFromFront()
         {
-            Remove(0);
+            _Remove(0, destroy: true);
         }
-        public void RemoveFromBack()
+        public void RemoveAndDestroyFromBack()
         {
-            if (NumberOfPanels > 0)
-            {
-                Remove(NumberOfPanels - 1);
-            }
-            else
-            {
-                Remove(0);
-            }
+            _Remove(NumberOfPanels - 1, destroy: true);
         }
-        public void Remove(int index)
+        public void RemoveAndDestroy(int index)
+        {
+            _Remove(index, destroy: true);
+        }
+        public void RemoveAndDestroyAll()
+        {
+        }
+        public GameObject RemoveFromFront()
+        {
+            return _Remove(0, destroy: false);
+        }
+        public GameObject RemoveFromBack()
+        {
+            return _Remove(NumberOfPanels - 1, destroy: false);
+        }
+        public GameObject Remove(int index)
+        {
+            return _Remove(index, destroy: false);
+        }
+        private GameObject _Remove(int index, bool destroy)
         {
             if (NumberOfPanels == 0)
             {
                 Debug.LogError("<b>[SimpleScrollSnap]</b> There are no panels to remove.", gameObject);
-                return;
+                return null;
             }
             else if (index < 0 || index > (NumberOfPanels - 1))
             {
                 Debug.LogError("<b>[SimpleScrollSnap]</b> Index must be an integer from 0 to " + (NumberOfPanels - 1) + ".", gameObject);
-                return;
+                return null;
             }
             else if (!useAutomaticLayout)
             {
                 Debug.LogError("<b>[SimpleScrollSnap]</b> \"Automatic Layout\" must be enabled for content to be dynamically removed during runtime.");
-                return;
+                return null;
             }
 
-            DestroyImmediate(Panels[index].gameObject);
+            if(_trashCan == null)
+            {
+                var trashCanGO = new GameObject("[TrashCan]");
+                trashCanGO.hideFlags = HideFlags.DontSave;
+                trashCanGO.SetActive(false);
+                _trashCan = trashCanGO.transform;
+            }
 
+            var panel = Panels[index];
+            panel.SetParent(_trashCan, worldPositionStays: false);
+
+            if (destroy)
+            {
+                Destroy(panel.gameObject);
+            }
+            
             if (ValidConfig)
             {
                 if (CenteredPanel == index)
@@ -763,6 +813,11 @@ namespace DanielLochner.Assets.SimpleScrollSnap
                 }
                 Setup();
             }
+
+            if (destroy)
+                return null;
+
+            return panel.gameObject;
         }
 
         private Vector2 GetDisplacementFromCenter(int index)
